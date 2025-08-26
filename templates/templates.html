@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Templates Email - Gestionnaire de Rappels Clients{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2><i class="fas fa-envelope-open-text me-2"></i>Templates d'Emails</h2>
+                <p class="text-muted">Gérez vos modèles d'emails personnalisés</p>
+            </div>
+            <a href="{{ url_for('ajouter_template') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Nouveau Template
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if templates %}
+<div class="row">
+    {% for template in templates %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">{{ template.nom }}</h6>
+                <small class="text-muted">{{ template.created_at.strftime('%d/%m/%Y') }}</small>
+            </div>
+            <div class="card-body">
+                <h6 class="card-title text-primary">{{ template.sujet }}</h6>
+                <p class="card-text">{{ template.contenu[:100] }}{% if template.contenu|length > 100 %}...{% endif %}</p>
+            </div>
+            <div class="card-footer">
+                <div class="btn-group w-100" role="group">
+                    <button type="button" class="btn btn-outline-primary btn-sm" 
+                            onclick="useTemplate('{{ template.sujet }}', `{{ template.contenu }}`)">
+                        <i class="fas fa-paper-plane me-1"></i>Utiliser
+                    </button>
+                    <button type="button" class="btn btn-outline-info btn-sm" 
+                            data-bs-toggle="modal" data-bs-target="#viewModal{{ template.id }}">
+                        <i class="fas fa-eye me-1"></i>Voir
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm"
+                            onclick="deleteTemplate({{ template.id }})">
+                        <i class="fas fa-trash me-1"></i>Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour voir le template -->
+    <div class="modal fade" id="viewModal{{ template.id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ template.nom }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Sujet :</label>
+                        <p class="form-control-plaintext">{{ template.sujet }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Contenu :</label>
+                        <div class="border p-3 rounded bg-light">
+                            {{ template.contenu | nl2br | safe }}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary" 
+                            onclick="useTemplate('{{ template.sujet }}', `{{ template.contenu }}`)"
+                            data-bs-dismiss="modal">
+                        <i class="fas fa-paper-plane me-2"></i>Utiliser ce Template
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-envelope-open-text fa-5x text-muted mb-3"></i>
+    <h4 class="text-muted">Aucun template disponible</h4>
+    <p class="text-muted">Créez votre premier modèle d'email pour gagner du temps</p>
+    <a href="{{ url_for('ajouter_template') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Créer un Template
+    </a>
+</div>
+{% endif %}
+
+<script>
+function useTemplate(sujet, contenu) {
+    // Rediriger vers la page d'envoi d'email avec les données pré-remplies
+    const params = new URLSearchParams({
+        sujet: sujet,
+        message: contenu
+    });
+    window.location.href = '/envoyer_email?' + params.toString();
+}
+
+function deleteTemplate(templateId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce template ?')) {
+        fetch('/templates/supprimer/' + templateId, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erreur lors de la suppression');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la suppression');
+        });
+    }
+}
+</script>
+{% endblock %}

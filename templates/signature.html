@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion de la Signature{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-signature me-2"></i>Gestion de la Signature Email</h3>
+            </div>
+            <div class="card-body">
+                {% if signature_exists %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>Signature active</strong><br>
+                    Votre signature sera automatiquement ajoutée à tous les emails envoyés.
+                </div>
+                
+                <div class="mb-4">
+                    <h5>Aperçu de la signature actuelle :</h5>
+                    <div class="border p-3 bg-light rounded">
+                        <img src="{{ url_for('static', filename='images/signature.png') }}" 
+                             style="max-width: 300px; height: auto;" 
+                             alt="Signature actuelle">
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Aucune signature configurée</strong><br>
+                    Téléchargez une image pour l'utiliser comme signature dans vos emails.
+                </div>
+                {% endif %}
+                
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.signature.label(class="form-label") }}
+                        {{ form.signature(class="form-control", accept="image/*") }}
+                        <div class="form-text">
+                            Formats acceptés : PNG, JPG, JPEG. Taille recommandée : max 300px de largeur.
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Retour
+                        </a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle me-2"></i>Conseils pour votre signature</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success me-2"></i>Utilisez une image de qualité (PNG recommandé)</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Gardez une largeur maximale de 300px</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Évitez les images trop lourdes (< 500KB)</li>
+                    <li><i class="fas fa-check text-success me-2"></i>Assurez-vous que le texte soit lisible</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

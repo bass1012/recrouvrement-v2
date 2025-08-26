@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Gestionnaire de Rappels Clients{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-chart-bar me-2"></i>Dashboard</h2>
+        <p class="text-muted">Vue d'ensemble de vos clients et statistiques</p>
+    </div>
+</div>
+
+<!-- Cartes de statistiques -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ total_clients }}</h4>
+                        <p class="mb-0">Total Clients</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ clients_actifs }}</h4>
+                        <p class="mb-0">Clients Actifs</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-check fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ expiring_soon }}</h4>
+                        <p class="mb-0">Expirent Bientôt</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ emails_sent }}</h4>
+                        <p class="mb-0">Emails (30j)</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-envelope fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Graphiques -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-pie me-2"></i>Répartition par Statut</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-line me-2"></i>Ajouts par Mois</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions rapides -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-bolt me-2"></i>Actions Rapides</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{{ url_for('ajouter_client') }}" class="btn btn-primary btn-lg w-100 mb-2">
+                            <i class="fas fa-user-plus me-2"></i>Nouveau Client
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('export_excel') }}" class="btn btn-success btn-lg w-100 mb-2">
+                            <i class="fas fa-file-excel me-2"></i>Export Excel
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('export_pdf') }}" class="btn btn-danger btn-lg w-100 mb-2">
+                            <i class="fas fa-file-pdf me-2"></i>Export PDF
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('templates') }}" class="btn btn-info btn-lg w-100 mb-2">
+                            <i class="fas fa-envelope-open-text me-2"></i>Templates
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Graphique en camembert pour les statuts
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+const statusChart = new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Actifs', 'Inactifs'],
+        datasets: [{
+            data: [{{ statut_data['Actifs'] }}, {{ statut_data['Inactifs'] }}],
+            backgroundColor: [
+                '#28a745',
+                '#dc3545'
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Graphique en barres pour les ajouts mensuels
+const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+const monthlyChart = new Chart(monthlyCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ monthly_data.keys() | list | tojson }},
+        datasets: [{
+            label: 'Nouveaux Clients',
+            data: {{ monthly_data.values() | list | tojson }},
+            backgroundColor: '#007bff',
+            borderColor: '#0056b3',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

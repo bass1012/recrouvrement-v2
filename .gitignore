@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environnements virtuels
+venv/
+ENV/
+env/
+.venv/
+
+# Fichiers de configuration locaux
+.env
+.env.*
+
+# Bases de données locales
+*.sqlite3
+*.db
+instance/
+
+# MacOS
+.DS_Store
+
+# Autres
+*.log

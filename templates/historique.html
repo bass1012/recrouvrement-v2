@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Historique des Emails - Gestionnaire de Rappels Clients{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-history me-2"></i>Historique des Emails</h2>
+        <p class="text-muted">Consultez l'historique de tous les emails envoyés</p>
+    </div>
+</div>
+
+{% if logs.items %}
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date d'Envoi</th>
+                        <th>Client</th>
+                        <th>Sujet</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs.items %}
+                    <tr>
+                        <td>
+                            <i class="fas fa-calendar me-2"></i>
+                            {{ log.date_envoi.strftime('%d/%m/%Y à %H:%M') }}
+                        </td>
+                        <td>
+                            <i class="fas fa-user me-2"></i>
+                            {{ log.client.nom }}
+                            <br>
+                            <small class="text-muted">{{ log.client.email }}</small>
+                        </td>
+                        <td>{{ log.sujet }}</td>
+                        <td>
+                            {% if log.statut == 'envoyé' %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>Envoyé
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-times me-1"></i>Échec
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-outline-info btn-sm" 
+                                    data-bs-toggle="modal" data-bs-target="#emailModal{{ log.id }}">
+                                <i class="fas fa-eye me-1"></i>Voir
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Modal pour voir le contenu de l'email -->
+                    <div class="modal fade" id="emailModal{{ log.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Email envoyé à {{ log.client.nom }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <strong>Date d'envoi :</strong><br>
+                                            {{ log.date_envoi.strftime('%d/%m/%Y à %H:%M') }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Statut :</strong><br>
+                                            {% if log.statut == 'envoyé' %}
+                                                <span class="badge bg-success">Envoyé</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Échec</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Destinataire :</strong><br>
+                                        {{ log.client.nom }} ({{ log.client.email }})
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Sujet :</strong><br>
+                                        {{ log.sujet }}
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Contenu :</strong><br>
+                                        <div class="border p-3 rounded bg-light">
+                                            {{ log.contenu | nl2br | safe }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if logs.pages > 1 %}
+<nav aria-label="Pagination des emails">
+    <ul class="pagination justify-content-center mt-4">
+        {% if logs.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('historique', page=logs.prev_num) }}">
+                    <i class="fas fa-chevron-left"></i> Précédent
+                </a>
+            </li>
+        {% endif %}
+        
+        {% for page_num in logs.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != logs.page %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('historique', page=page_num) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                {% endif %}
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">…</span>
+                </li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if logs.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('historique', page=logs.next_num) }}">
+                    Suivant <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+
+<div class="text-center text-muted mt-2">
+    Page {{ logs.page }} sur {{ logs.pages }} 
+    ({{ logs.total }} emails au total)
+</div>
+{% endif %}
+
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-inbox fa-5x text-muted mb-3"></i>
+    <h4 class="text-muted">Aucun email dans l'historique</h4>
+    <p class="text-muted">Les emails envoyés apparaîtront ici</p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary">
+        <i class="fas fa-paper-plane me-2"></i>Envoyer un Email
+    </a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Rappels Automatiques{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-clock me-2"></i>Gestion des Rappels Automatiques</h1>
+        <p class="text-muted">Configurez et gérez les rappels automatiques pour vos clients inactifs.</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-cog me-2"></i>Configuration Actuelle</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Rappels automatiques activés</strong><br>
+                    Les rappels sont envoyés quotidiennement aux clients dont l'abonnement expire dans 2 jours.
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-calendar-alt fa-2x text-primary mb-2"></i>
+                                <h6>Fréquence</h6>
+                                <p class="mb-0">Chaque semaine</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-hourglass-half fa-2x text-warning mb-2"></i>
+                                <h6>Délai d'alerte</h6>
+                                <p class="mb-0">2 jours avant expiration</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-play me-2"></i>Actions Rapides</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('envoyer_rappels_maintenant') }}" class="btn btn-success">
+                        <i class="fas fa-paper-plane me-1"></i>
+                        Envoyer Rappels Maintenant
+                    </a>
+                    <button class="btn btn-outline-primary" onclick="testerConfiguration()">
+                        <i class="fas fa-test-tube me-1"></i>
+                        Tester Configuration
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="fas fa-chart-pie me-2"></i>Statistiques</h6>
+            </div>
+            <div class="card-body">
+                <p class="small mb-1">
+                    <i class="fas fa-users me-1 text-muted"></i>
+                    Clients actifs: <strong>{{ clients_actifs or 0 }}</strong>
+                </p>
+                <p class="small mb-1">
+                    <i class="fas fa-exclamation-triangle me-1 text-warning"></i>
+                    Clients inactifs: <strong>{{ clients_inactifs or 0 }}</strong>
+                </p>
+                <p class="small mb-0">
+                    <i class="fas fa-envelope me-1 text-primary"></i>
+                    Derniers rappels: <strong>Aucun</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-envelope-open-text me-2"></i>Modèle de Message de Rappel</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-secondary">
+                    <h6>Sujet: Rappel : Votre abonnement expire bientôt</h6>
+                    <hr>
+                    <p class="mb-0">
+                        Bonjour [Nom du Client],<br><br>
+                        Nous espérons que vous allez bien.<br><br>
+                        Nous vous informons que votre abonnement expire dans 2 jours.
+                        N'hésitez pas à nous contacter pour le renouveler et continuer à bénéficier de nos services.<br><br>
+                        Nous serions ravis de vous accompagner pour le renouvellement !<br><br>
+                        Cordialement,<br>
+                        Votre équipe
+                    </p>
+                </div>
+                <p class="text-muted small">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Ce message est automatiquement personnalisé avec le nom de chaque client.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5><i class="fas fa-exclamation-triangle me-2"></i>Configuration Email Requise</h5>
+            </div>
+            <div class="card-body">
+                <p>Pour utiliser les rappels automatiques, vous devez configurer vos paramètres email dans le fichier <code>.env</code>:</p>
+                <pre class="bg-light p-3 rounded"><code>SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+EMAIL_EXPEDITEUR=votre-email@gmail.com
+MOT_DE_PASSE_EMAIL=votre-mot-de-passe-app</code></pre>
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    <strong>Sécurité:</strong> Pour Gmail, utilisez un mot de passe d'application plutôt que votre mot de passe principal.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function testerConfiguration() {
+    alert('Test de configuration - Cette fonctionnalité sera bientôt disponible');
+}
+</script>
+{% endblock %}

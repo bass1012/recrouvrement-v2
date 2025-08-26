@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Accueil - Gestionnaire de Rappels Clients{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Liste des Clients</h2>
+        <p class="text-muted">Gérez vos clients et leurs informations</p>
+        
+        <!-- Barre de recherche et filtres -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-6">
+                        <label for="search" class="form-label">Rechercher</label>
+                        <input type="text" class="form-control" id="search" name="search" 
+                               value="{{ search }}" placeholder="Nom, email ou téléphone...">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Statut</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">Tous les statuts</option>
+                            <option value="actif" {% if status_filter == 'actif' %}selected{% endif %}>Actif</option>
+                            <option value="inactif" {% if status_filter == 'inactif' %}selected{% endif %}>Inactif</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-users me-2"></i>Liste des Clients</h1>
+            <a href="{{ url_for('ajouter_client') }}" class="btn btn-success">
+                <i class="fas fa-plus me-1"></i>Nouveau Client
+            </a>
+        </div>
+
+        {% if clients %}
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>Téléphone</th>
+                                <th>Date d'Ajout</th>
+                                <th>Date d'Expiration</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for client in clients %}
+                            <tr>
+                                <td>
+                                    <strong>{{ client.nom }}</strong>
+                                    {% if client.notes %}
+                                    <br><small class="text-muted">{{ client.notes[:50] }}{% if client.notes|length > 50 %}...{% endif %}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ client.email }}</td>
+                                <td>{{ client.telephone or '-' }}</td>
+                                <td>
+                                    {% if client.date_ajout %}
+                                        {{ client.date_ajout.strftime('%d/%m/%Y') }}
+                                    {% else %}
+                                        <span class="text-muted">Non renseignée</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if client.date_expiration %}
+                                        {{ client.date_expiration.strftime('%d/%m/%Y') }}
+                                        {% set today = datetime.now().date() %}
+                                        {% set jours_restants = (client.date_expiration - today).days %}
+                                        {% if jours_restants <= 2 %}
+                                            <br><small class="text-danger">Expire dans {{ jours_restants }} jour(s)</small>
+                                        {% elif jours_restants <= 7 %}
+                                            <br><small class="text-warning">Expire dans {{ jours_restants }} jours</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">Non renseignée</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if client.statut == 'actif' %}
+                                        <span class="badge bg-success">Actif</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Inactif</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('envoyer_email_client', id=client.id) }}" 
+                                           class="btn btn-sm btn-primary" title="Envoyer un email">
+                                            <i class="fas fa-envelope"></i>
+                                        </a>
+                                        <a href="{{ url_for('modifier_client', id=client.id) }}" 
+                                           class="btn btn-sm btn-warning" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{{ url_for('supprimer_client', id=client.id) }}" 
+                                           class="btn btn-sm btn-danger" title="Supprimer"
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce client ?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+            <h3 class="text-muted">Aucun client enregistré</h3>
+            <p class="text-muted">Commencez par ajouter votre premier client</p>
+            <a href="{{ url_for('ajouter_client') }}" class="btn btn-success">
+                <i class="fas fa-plus me-1"></i>Ajouter un Client
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <i class="fas fa-clock fa-2x text-primary mb-2"></i>
+                <h5>Rappels Automatiques</h5>
+                <p class="text-muted">Gérez les rappels automatiques pour vos clients inactifs</p>
+                <a href="{{ url_for('gerer_rappels') }}" class="btn btn-outline-primary">
+                    Configurer
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-bar fa-2x text-success mb-2"></i>
+                <h5>Statistiques</h5>
+                <p class="text-muted">
+                    <strong>{{ clients|length }}</strong> clients au total<br>
+                    <strong>{{ clients|selectattr("statut", "equalto", "actif")|list|length }}</strong> clients actifs
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
