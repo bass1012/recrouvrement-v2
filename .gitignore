@@ -23,8 +23,33 @@ env/
 *.db
 instance/
 
+# Docker
+docker-compose.override.yml
+Dockerfile
+.dockerignore
+
+# Fichiers de développement
+.vscode/
+.idea/
+
 # MacOS
 .DS_Store
 
-# Autres
+# Fichiers de logs
 *.log
+
+# Fichiers temporaires
+*.swp
+*.swo
+*~
+
+# Fichiers de configuration de l'éditeur
+.ropeproject/
+.project
+.pydevproject
+.settings/
+
+# Fichiers de cache
+.cache/
+.coverage
+htmlcov/
